@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Banking Search Component — Dev</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 40px 24px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #f0f4f8;
+        color: #111827;
+      }
+      h2 { margin: 0 0 24px; font-size: 18px; color: #374151; }
+      .demo {
+        max-width: 540px;
+        margin: 0 auto;
+      }
+      .log {
+        margin-top: 24px;
+        padding: 14px;
+        background: #1e293b;
+        color: #94a3b8;
+        border-radius: 8px;
+        font-size: 13px;
+        font-family: monospace;
+        min-height: 60px;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo">
+      <h2>banking-search — dev playground</h2>
+      <banking-search id="search"></banking-search>
+      <div class="log" id="log">// events will appear here…</div>
+    </div>
+
+    <script type="module">
+      import './src/index.ts';
+
+      // Mock data simulating a real API response
+      const MOCK_DATA = [
+        { id: '1', category: 'account', title: 'Checking — ****4821', subtitle: 'John Doe', meta: '$12,430.00' },
+        { id: '2', category: 'account', title: 'Savings — ****9034', subtitle: 'John Doe', meta: '$5,200.00' },
+        { id: '3', category: 'customer', title: 'Jane Smith', subtitle: 'Customer ID: C-00291', meta: '' },
+        { id: '4', category: 'customer', title: 'John Doe', subtitle: 'Customer ID: C-00143', meta: '' },
+        { id: '5', category: 'transaction', title: 'Wire Transfer #TXN-8821', subtitle: 'To: Jane Smith • Mar 20, 2026', meta: '-$500.00' },
+        { id: '6', category: 'transaction', title: 'Direct Deposit #TXN-7741', subtitle: 'From: ACME Corp • Mar 15, 2026', meta: '+$3,200.00' },
+      ];
+
+      const search = document.getElementById('search');
+      const log = document.getElementById('log');
+
+      function print(msg) {
+        log.textContent = msg;
+      }
+
+      search.addEventListener('banking-search', (e) => {
+        const { query, category } = e.detail;
+        print(`banking-search fired\n  query: "${query}"\n  category: "${category}"\n\n  → simulating API call…`);
+
+        search.loading = true;
+
+        // Simulate async API delay
+        setTimeout(() => {
+          const q = query.toLowerCase();
+          const results = MOCK_DATA.filter(
+            (item) =>
+              (category === 'all' || item.category === category) &&
+              (item.title.toLowerCase().includes(q) || item.subtitle.toLowerCase().includes(q))
+          );
+          search.loading = false;
+          search.results = results;
+          print(`banking-search fired\n  query: "${query}"\n  category: "${category}"\n\n  → ${results.length} result(s) returned`);
+        }, 600);
+      });
+
+      search.addEventListener('banking-search-select', (e) => {
+        print(`banking-search-select fired\n  id: ${e.detail.result.id}\n  title: "${e.detail.result.title}"`);
+      });
+
+      search.addEventListener('banking-search-clear', () => {
+        print('banking-search-clear fired');
+      });
+    </script>
+  </body>
+</html>
