@@ -2,6 +2,8 @@
 
 A reusable, accessible, framework-agnostic smart search web component built for banking applications. Drop it into any platform — React, Angular, Vue, or plain HTML — with no build pipeline required on the consumer side.
 
+**[Live Demo](https://p4me.github.io/webComponets/)**
+
 ---
 
 ## Features
