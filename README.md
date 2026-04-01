@@ -1,153 +1,230 @@
-# Smart Search Web Component
+# smart-search
 
-  **A reusable, accessible, framework-agnostic smart search component built for banking applications.**
-  
-  Designed to be dropped into any banking platform (React, Angular, Vue, plain HTML, etc.) for searching accounts, transactions, customers, and **other banking entities**.
-  
-  ![Smart Search Demo](demo.gif)  
-  *(Replace this line with a short 10-second screen recording of your demo page — highly recommended)*
+A reusable, accessible, framework-agnostic smart search web component built for banking applications. Drop it into any platform — React, Angular, Vue, or plain HTML — with no build pipeline required on the consumer side.
+
+---
 
 ## Features
-  - Interactive search input with clear button
-  - Dynamic results dropdown with keyboard navigation (↑ ↓ Enter Esc)
-  - Fully configurable category filters (All, Accounts, Customers, Transactions, Funds, Branches, etc.)
-  - Search term highlighting in results
-  - Hybrid theming (`theme` attribute + `prefers-color-scheme`)
-  - Dynamic positioning with automatic flip (above/below the input)
-  - Click-outside dismissal + proper overlay behavior
-  - Full ARIA combobox pattern and screen-reader support
-  - Mobile & touch friendly
-  - Style isolation via Shadow DOM
-  - Clean custom events for easy integration
-  - 300ms debounce for realistic UX
 
-## Quick Start
-  ```bash
-  git clone https://github.com/yourusername/smart-search.git
-  cd smart-search
-  npm install
-  npm run dev          # Start development server with demo
-  ```
+- Interactive search input with clear button
+- Dynamic results dropdown with keyboard navigation (↑ ↓ Enter Escape Tab)
+- Configurable category filter chips (All, Accounts, Customers, Transactions, or any custom set)
+- 300ms debounced search — realistic for banking UX
+- Search term highlighting in results
+- Light / Dark / Auto theming (follows `prefers-color-scheme`)
+- Fully customisable via CSS custom properties
+- Dynamic dropdown positioning — repositions on resize and scroll, flips above when viewport space is limited
+- Click-outside dismissal and proper overlay stacking
+- Shadow DOM style isolation
+- Mobile and touch friendly (44px minimum touch targets)
+- Full ARIA combobox pattern — screen reader compatible
+- Clean custom events for easy parent integration
 
-## Scripts
-  ```bash
-    npm run dev      # Start demo
-    npm run build    # Production build
-    npm run preview  # Preview built demo
-    npm test         # Run tests
-  ```
+---
+
+## Installation
+
+```bash
+git clone https://github.com/p4me/webComponets.git
+cd webComponets
+npm install
+```
+
+---
+
+## Getting Started
+
+```bash
+npm run dev       # Start demo at http://localhost:5173
+npm run build     # Production build → dist/
+npm run preview   # Preview the production build
+npm test          # Run test suite
+```
+
+---
 
 ## Usage
-- Basic usage (HTML)
-  ```bash
-  <script type="module" src="smart-search.js"></script>
-  <smart-search placeholder="Search accounts, customers..."></smart-search>
-  ```
-- With custom categories (recommended for banking apps)
-     ```bash
-  <smart-search id="search" theme="auto"></smart-search>
 
-  <script type="module">
-    const search = document.getElementById('search');
-    
-    // Fully configurable for any banking entity
-    search.categories = [
-      { value: 'all',         label: 'All'},
-      { value: 'account',     label: 'Accounts'},
-      { value: 'customer',    label: 'Customers'},
-      { value: 'transaction', label: 'Transactions'},
-      { value: 'fund',        label: 'Funds'},
-    ];
-    
-    search.addEventListener('smart-search', (e) => {
-      console.log('Search requested:', e.detail);
-      // Parent handles the actual search here
+### Basic (plain HTML)
+
+```html
+<script type="module" src="dist/banking-search.js"></script>
+
+<smart-search id="search" theme="light"></smart-search>
+
+<script>
+  const search = document.getElementById('search');
+
+  search.addEventListener('smart-search', (e) => {
+    const { query, category } = e.detail;
+    search.loading = true;
+
+    fetchResults(query, category).then(results => {
+      search.loading = false;
+      search.results = results;
     });
-    
-    search.addEventListener('smart-search-select', (e) => {
-      console.log('User selected:', e.detail.result);
-    });
-  </script>
-  ```
+  });
+
+  search.addEventListener('smart-search-select', (e) => {
+    console.log('Selected:', e.detail.result);
+  });
+
+  search.addEventListener('smart-search-clear', () => {
+    search.results = [];
+  });
+</script>
+```
+
+### Custom categories
+
+Arrays must be set as a JavaScript property (not an HTML attribute):
+
+```js
+search.categories = [
+  { value: 'all',         label: 'All' },
+  { value: 'account',     label: 'Accounts' },
+  { value: 'customer',    label: 'Customers' },
+  { value: 'transaction', label: 'Transactions' },
+  { value: 'fund',        label: 'Funds' },
+];
+```
+
+### Custom branding via CSS custom properties
+
+```html
+<smart-search
+  style="
+    --search-primary:      #e63946;
+    --search-border-focus: #e63946;
+    --search-chip-bg:      #fde8ea;
+    --search-chip-color:   #e63946;
+    --search-font-family:  'Georgia', serif;
+    --search-radius:       4px;
+  "
+></smart-search>
+```
+
+---
 
 ## Theming
-  The component supports three theming modes:
-  
-  - theme="auto" (default) → automatically follows the user’s OS/browser preference (prefers-color-scheme)
-  - theme="light" → forces light theme
-  - theme="dark" → forces dark theme
-  
-  You can also fully customize the look using CSS custom properties:
-  ```bash
-    smart-search {
-  --search-primary:      #e63946;   /* your brand color */
-  --search-font-family:  'Inter', sans-serif;
-  --search-font-size:    15px;
-  --search-radius:       4px;
-  /* ... any other --search-* variable */
-  }
-  ```
-  All colors, shadows, borders, and fonts are controlled via CSS variables defined inside the Shadow DOM.
+
+| Value | Behaviour |
+|-------|-----------|
+| `theme="auto"` (default) | Follows OS `prefers-color-scheme` |
+| `theme="light"` | Always light |
+| `theme="dark"` | Always dark |
+
+---
 
 ## API Reference
-  ### Attributes / Properties
-  
-  | Name          | Type                              | Default       | Description                          |
-  |---------------|-----------------------------------|---------------|--------------------------------------|
-  | `value`       | `string`                          | `""`          | Current search query (two-way)       |
-  | `placeholder` | `string`                          | (auto)        | Input placeholder                    |
-  | `loading`     | `boolean`                         | `false`       | Show loading spinner                 |
-  | `disabled`    | `boolean`                         | `false`       | Disable the component                |
-  | `theme`       | `"light" \| "dark" \| "auto"`     | `"auto"`      | Theme mode                           |
-  | `results`     | `SearchResult[]`                  | `[]`          | Results to display                   |
-  | `categories`  | `SearchCategory_Option[]`         | (built-in)    | Filter tabs                          |
-  
-  ### Events
-  
-  | Event                    | Detail Type                                      | Description |
-  |--------------------------|--------------------------------------------------|-----------|
-  | `smart-search`           | `{ query: string, category: string }`            | Fired after 300ms debounce |
-  | `smart-search-select`    | `{ result: SearchResult }`                       | User selected a result |
-  | `smart-search-clear`     | —                                                | Clear button clicked |
+
+### Attributes / Properties
+
+| Name          | Type                              | Default    | Description                                         |
+|---------------|-----------------------------------|------------|-----------------------------------------------------|
+| `theme`       | `"light" \| "dark" \| "auto"`    | `"auto"`   | Colour scheme                                       |
+| `value`       | `string`                          | `""`       | Current search query (reflected as attribute)       |
+| `placeholder` | `string`                          | (auto)     | Input placeholder — auto-generated from categories if omitted |
+| `loading`     | `boolean`                         | `false`    | Shows spinner, hides results                        |
+| `disabled`    | `boolean`                         | `false`    | Disables the component                              |
+| `results`     | `SearchResult[]`                  | `[]`       | Results to display — set after receiving `smart-search` |
+| `categories`  | `SearchCategory_Option[]`         | (4 built-in) | Filter tabs — set as JS property                  |
+
+### Events
+
+| Event                 | Detail                                  | Fired when                                       |
+|-----------------------|-----------------------------------------|--------------------------------------------------|
+| `smart-search`        | `{ query: string, category: string }`   | User types (debounced 300ms) or presses Enter    |
+| `smart-search-select` | `{ result: SearchResult }`              | User clicks or presses Enter on a result         |
+| `smart-search-clear`  | —                                       | User clicks the clear (×) button                 |
+
+All events `bubble` and are `composed` — they cross shadow DOM boundaries to reach any parent listener.
+
+### CSS Custom Properties
+
+| Property               | Default                           | Description                  |
+|------------------------|-----------------------------------|------------------------------|
+| `--search-font-family` | system-ui                         | Font stack                   |
+| `--search-font-size`   | `14px`                            | Base font size               |
+| `--search-primary`     | `#0057b8`                         | Brand / accent colour        |
+| `--search-border`      | `#9ca3af`                         | Idle border colour           |
+| `--search-border-focus`| `#0057b8`                         | Focused border colour        |
+| `--search-bg`          | `#ffffff`                         | Surface background           |
+| `--search-bg-hover`    | `#f3f4f6`                         | Hovered row background       |
+| `--search-text`        | `#111827`                         | Primary text colour          |
+| `--search-text-muted`  | `#6b7280`                         | Placeholder / secondary text |
+| `--search-radius`      | `8px`                             | Corner radius                |
+| `--search-shadow`      | `0 4px 12px rgba(0,0,0,0.10)`    | Dropdown shadow              |
+| `--search-chip-bg`     | `#e0edff`                         | Active chip background       |
+| `--search-chip-color`  | `#0057b8`                         | Active chip text colour      |
+
+---
 
 ## Data Types
-  ```bash
-  interface SearchResult {
-    id: string;
-    category: string;
-    title: string;
-    subtitle?: string;
-    meta?: string;
-    [key: string]: any; 
-  }
-  
-  interface SearchCategory_Option {
-    value: string;
-    label: string;
-  }
-  ```
 
-## Project structure
-  ```bash
-  src/
-    smart-search.ts          # Component implementation
-    smart-search.test.ts     # Vitest test suite
-    index.ts                 # Package entry point
-    types/
-      search.types.ts        # TypeScript interfaces
-  index.html                 # Demo application
-  vite.config.ts             # Vite + Vitest configuration
-  ```
+```ts
+interface SearchResult {
+  id:        string;
+  category:  string;
+  title:     string;
+  subtitle?: string;
+  meta?:     string;       // e.g. account balance, transaction amount
+  [key: string]: any;      // flexible — supports any additional fields
+}
+
+interface SearchCategory_Option {
+  value: string;
+  label: string;
+}
+```
+
+---
+
 ## Testing
-  ```bash
-    npm test
-  ```
-  Tests cover rendering, events, keyboard navigation, filtering, highlighting, clear button, click-outside, accessibility, and more.
+
+```bash
+npm test              # Run all tests once
+npm run test:watch    # Watch mode
+npm run test:coverage # Coverage report
+```
+
+Tests are written with [Vitest](https://vitest.dev/) and run in [happy-dom](https://github.com/capricorn86/happy-dom).
+
+### Test coverage
+
+| Suite                | What is covered                                                        |
+|----------------------|------------------------------------------------------------------------|
+| Rendering            | Input, chips, custom categories, placeholder, disabled state           |
+| Search events        | `smart-search` fires with correct query and category, debounce handled |
+| Results & dropdown   | Open/close, result count, loading state, category filtering, highlighting |
+| Keyboard navigation  | ArrowDown/Up, Enter to select, Escape to close                         |
+| Clear                | Button visibility, `smart-search-clear` event, state reset             |
+| Click outside        | Closes on external click, stays open on internal click                 |
+| Accessibility        | ARIA roles, `aria-expanded`, `aria-activedescendant`, live region      |
+| Event communication  | Events bubble and are composed across shadow DOM                       |
+
+---
+
+## Project Structure
+
+```
+src/
+  smart-search.ts        # Component implementation
+  smart-search.test.ts   # Vitest test suite
+  index.ts               # Package entry point
+  types/
+    search.types.ts      # TypeScript interfaces
+index.html               # Demo application
+vite.config.ts           # Vite + Vitest configuration
+```
+
+---
 
 ## Tech Stack
-  - Lit 3 – Lightweight web components
-  - TypeScript
-  - Vite
-  - Vitest
 
-  
+| Tool | Purpose |
+|------|---------|
+| [Lit 3](https://lit.dev/) | Web component framework — reactive properties, Shadow DOM, CSS template tags |
+| TypeScript | Type safety |
+| Vite | Dev server + production build |
+| Vitest + happy-dom | Unit testing |

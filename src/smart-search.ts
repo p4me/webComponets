@@ -128,6 +128,7 @@ export class SmartSearch extends LitElement {
       color: var(--search-text);
       padding: 12px 0;
       min-width: 0;
+      min-height: 44px;
     }
 
     input::placeholder { color: var(--search-text-muted); }
@@ -140,9 +141,12 @@ export class SmartSearch extends LitElement {
       cursor: pointer;
       color: var(--search-text-muted);
       padding: 4px;
+      min-width: 44px;
+      min-height: 44px;
       border-radius: 50%;
       display: flex;
       align-items: center;
+      justify-content: center;
       transition: background 0.15s, color 0.15s;
     }
     .clear-btn:hover {
@@ -160,6 +164,7 @@ export class SmartSearch extends LitElement {
 
     .chip {
       padding: 4px 12px;
+      min-height: 44px;
       border-radius: 999px;
       font-size: calc(var(--search-font-size) - 1px);
       border: 1.5px solid var(--search-border);
