@@ -3,88 +3,233 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Banking Search Component — Dev</title>
+    <title>Smart Search Component — Demo</title>
     <style>
       *, *::before, *::after { box-sizing: border-box; }
+
       body {
         margin: 0;
         padding: 40px 24px;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         background: #f0f4f8;
         color: #111827;
+        transition: background 0.2s, color 0.2s;
       }
-      h2 { margin: 0 0 24px; font-size: 18px; color: #374151; }
-      .demo {
-        max-width: 540px;
+
+      body.dark {
+        background: #0f172a;
+        color: #f1f5f9;
+      }
+
+      .page {
+        max-width: 560px;
         margin: 0 auto;
       }
+
+      h1 {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0 0 4px;
+      }
+
+      p.subtitle {
+        font-size: 14px;
+        color: #6b7280;
+        margin: 0 0 24px;
+      }
+
+      /* Theme toggle */
+      .theme-bar {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 32px;
+      }
+
+      .themeLabel {
+        align-self: center;
+      }
+
+      .theme-bar button {
+        padding: 4px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        border: 1.5px solid #d1d5db;
+        background: #ffffff;
+        color: #6b7280;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .theme-bar button.active {
+        background: #0057b8;
+        border-color: #0057b8;
+        color: #ffffff;
+        font-weight: 600;
+      }
+
+      /* Demo sections */
+      .section {
+        margin-bottom: 40px;
+      }
+
+      .section h2 {
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+        margin: 0 0 4px;
+      }
+
+      .section p {
+        font-size: 13px;
+        color: #6b7280;
+        margin: 0 0 12px;
+      }
+
+      body.dark .section h2 { color: #cbd5e1; }
+      body.dark .section p  { color: #94a3b8; }
+
       .log {
-        margin-top: 24px;
-        padding: 14px;
+        margin-top: 12px;
+        padding: 12px 14px;
         background: #1e293b;
         color: #94a3b8;
         border-radius: 8px;
-        font-size: 13px;
-        font-family: monospace;
-        min-height: 60px;
+        font-size: 12px;
+        font-family: 'SF Mono', 'Fira Mono', monospace;
+        min-height: 52px;
         white-space: pre-wrap;
+        line-height: 1.6;
       }
     </style>
   </head>
   <body>
-    <div class="demo">
-      <h2>banking-search — dev playground</h2>
-      <banking-search id="search"></banking-search>
-      <div class="log" id="log">// events will appear here…</div>
+    <div class="page">
+
+      <h1>smart-search</h1>
+      <p class="subtitle">Smart Search Web Component — built with Lit</p>
+
+      <!-- Theme toggle -->
+      <div class="theme-bar">
+        <span class="themeLabel">Select theme:</span>
+        <button id="btnLight" class="active" onclick="setTheme('light')">Light</button>
+        <button id="btnDark"  onclick="setTheme('dark')">Dark</button>
+        <button id="btnAuto"  onclick="setTheme('auto')">Auto</button>
+      </div>
+
+      <!--
+        ══════════════════════════════════════════════════════════════════════
+        Example 1 — Default categories (no configuration needed)
+
+        Nothing extra is set on this element. The component ships with four
+        built-in tabs: All · Accounts · Customers · Transactions.
+        ══════════════════════════════════════════════════════════════════════
+      -->
+      <div class="section">
+        <h2>Default categories</h2>
+        <p>No configuration — uses the built-in tabs: All · Accounts · Customers · Transactions</p>
+
+        <smart-search id="searchDefault" theme="light"></smart-search>
+
+        <div class="log" id="logDefault">// events will appear here…</div>
+      </div>
+
+      <!--
+        ══════════════════════════════════════════════════════════════════════
+        Example 2 — Custom categories (configured by the parent)
+
+        Arrays cannot be passed as plain HTML attributes, so the parent sets
+        the `categories` JavaScript property directly after grabbing the
+        element. This is the standard web-component pattern for complex data.
+
+        The script below does:
+          searchCustom.categories = [
+            { value: 'all',      label: 'All',          icon: '🔍' },
+            { value: 'account',  label: 'Account Name', icon: '🏦' },
+            { value: 'customer', label: 'Customer',      icon: '👤' },
+          ];
+        ══════════════════════════════════════════════════════════════════════
+      -->
+      <div class="section">
+        <h2>Custom categories (configured by parent)</h2>
+        <p>Parent passes only Account Name and Customer — no transaction search needed here.</p>
+
+        <smart-search id="searchCustom" theme="light"></smart-search>
+
+        <div class="log" id="logCustom">// events will appear here…</div>
+      </div>
+
     </div>
 
     <script type="module">
       import './src/index.ts';
 
-      // Mock data simulating a real API response
+      // ── Shared mock data ──────────────────────────────────────────────────────
       const MOCK_DATA = [
-        { id: '1', category: 'account', title: 'Checking — ****4821', subtitle: 'John Doe', meta: '$12,430.00' },
-        { id: '2', category: 'account', title: 'Savings — ****9034', subtitle: 'John Doe', meta: '$5,200.00' },
-        { id: '3', category: 'customer', title: 'Jane Smith', subtitle: 'Customer ID: C-00291', meta: '' },
-        { id: '4', category: 'customer', title: 'John Doe', subtitle: 'Customer ID: C-00143', meta: '' },
-        { id: '5', category: 'transaction', title: 'Wire Transfer #TXN-8821', subtitle: 'To: Jane Smith • Mar 20, 2026', meta: '-$500.00' },
-        { id: '6', category: 'transaction', title: 'Direct Deposit #TXN-7741', subtitle: 'From: ACME Corp • Mar 15, 2026', meta: '+$3,200.00' },
+        { id: '1', category: 'account',     title: 'Checking — ****4821',     subtitle: 'John Doe',                       meta: '$12,430.00' },
+        { id: '2', category: 'account',     title: 'Savings — ****9034',      subtitle: 'John Doe',                       meta: '$5,200.00'  },
+        { id: '3', category: 'account',     title: 'Business — ****2201',     subtitle: 'Doe Enterprises LLC',            meta: '$98,000.00' },
+        { id: '4', category: 'customer',    title: 'Jane Smith',               subtitle: 'Customer ID: C-00291',           meta: ''           },
+        { id: '5', category: 'customer',    title: 'John Doe',                 subtitle: 'Customer ID: C-00143',           meta: ''           },
+        { id: '6', category: 'transaction', title: 'Wire Transfer #TXN-8821',  subtitle: 'To: Jane Smith · Mar 20, 2026',  meta: '-$500.00'   },
+        { id: '7', category: 'transaction', title: 'Direct Deposit #TXN-7741', subtitle: 'From: ACME Corp · Mar 15, 2026', meta: '+$3,200.00' },
+        { id: '8', category: 'transaction', title: 'Card Purchase #TXN-6612',  subtitle: 'Amazon · Mar 12, 2026',          meta: '-$89.99'    },
       ];
 
-      const search = document.getElementById('search');
-      const log = document.getElementById('log');
+      // ── Wire up a search instance ─────────────────────────────────────────────
+      function wireSearch(searchEl, logEl) {
+        searchEl.addEventListener('smart-search', (e) => {
+          const { query, category } = e.detail;
+          logEl.textContent = `smart-search\n  query: "${query}"\n  category: "${category}"\n\n  → fetching…`;
+          searchEl.loading = true;
+          setTimeout(() => {
+            const q = query.toLowerCase();
+            const results = MOCK_DATA.filter(
+              (item) =>
+                (category === searchEl.categories[0].value || item.category === category) &&
+                (item.title.toLowerCase().includes(q) || item.subtitle.toLowerCase().includes(q))
+            );
+            searchEl.loading = false;
+            searchEl.results = results;
+            logEl.textContent = `smart-search\n  query: "${query}"\n  category: "${category}"\n\n  → ${results.length} result(s) returned`;
+          }, 600);
+        });
 
-      function print(msg) {
-        log.textContent = msg;
+        searchEl.addEventListener('smart-search-select', (e) => {
+          logEl.textContent = `smart-search-select\n  id:    ${e.detail.result.id}\n  title: "${e.detail.result.title}"`;
+        });
+
+        searchEl.addEventListener('smart-search-clear', () => {
+          logEl.textContent = 'smart-search-clear';
+        });
       }
 
-      search.addEventListener('banking-search', (e) => {
-        const { query, category } = e.detail;
-        print(`banking-search fired\n  query: "${query}"\n  category: "${category}"\n\n  → simulating API call…`);
+      // ── Example 1: default categories ────────────────────────────────────────
+      // No categories set → component uses its four built-in defaults.
+      const searchDefault = document.getElementById('searchDefault');
+      wireSearch(searchDefault, document.getElementById('logDefault'));
 
-        search.loading = true;
+      // ── Example 2: custom categories passed by the parent ────────────────────
+      // Arrays must be set as a JS property (not an HTML attribute).
+      // The parent is fully in control of which categories to expose.
+      const searchCustom = document.getElementById('searchCustom');
 
-        // Simulate async API delay
-        setTimeout(() => {
-          const q = query.toLowerCase();
-          const results = MOCK_DATA.filter(
-            (item) =>
-              (category === 'all' || item.category === category) &&
-              (item.title.toLowerCase().includes(q) || item.subtitle.toLowerCase().includes(q))
-          );
-          search.loading = false;
-          search.results = results;
-          print(`banking-search fired\n  query: "${query}"\n  category: "${category}"\n\n  → ${results.length} result(s) returned`);
-        }, 600);
-      });
+      searchCustom.categories = [
+        { value: 'all',      label: 'All',           icon: '🔍' },
+        { value: 'account',  label: 'Account Name',  icon: '🏦' },
+        { value: 'customer', label: 'Customer',       icon: '👤' },
+      ];
 
-      search.addEventListener('banking-search-select', (e) => {
-        print(`banking-search-select fired\n  id: ${e.detail.result.id}\n  title: "${e.detail.result.title}"`);
-      });
+      wireSearch(searchCustom, document.getElementById('logCustom'));
 
-      search.addEventListener('banking-search-clear', () => {
-        print('banking-search-clear fired');
-      });
+      // ── Theme toggle ──────────────────────────────────────────────────────────
+      window.setTheme = function(mode) {
+        document.getElementById('btnLight').classList.toggle('active', mode === 'light');
+        document.getElementById('btnDark').classList.toggle('active', mode === 'dark');
+        document.getElementById('btnAuto').classList.toggle('active', mode === 'auto');
+        document.body.classList.toggle('dark', mode === 'dark');
+        searchDefault.theme = mode;
+        searchCustom.theme  = mode;
+      };
     </script>
   </body>
 </html>

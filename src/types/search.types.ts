@@ -1,10 +1,18 @@
-export type SearchCategory = 'all' | 'account' | 'customer' | 'transaction';
+/** Any string — built-in values are 'all' | 'account' | 'customer' | 'transaction' */
+export type SearchCategory = string;
+
+export interface SearchCategory_Option {
+  value: string;
+  label: string;
+  /** Optional emoji/icon shown next to results of this category */
+  icon?: string;
+}
 
 export interface SearchResult {
   id: string;
   category: SearchCategory;
   title: string;
-  subtitle: string;
+  subtitle?: string;
   meta?: string;
 }
 
