@@ -101,18 +101,6 @@
       body.dark .section h2 { color: #4d9eff; }
       body.dark .section p  { color: #94a3b8; }
 
-      .log {
-        margin-top: 12px;
-        padding: 12px 14px;
-        background: #1e293b;
-        color: #94a3b8;
-        border-radius: 8px;
-        font-size: 12px;
-        font-family: 'SF Mono', 'Fira Mono', monospace;
-        min-height: 52px;
-        white-space: pre-wrap;
-        line-height: 1.6;
-      }
     </style>
   </head>
   <body>
@@ -143,7 +131,6 @@
 
         <smart-search id="searchDefault" theme="light"></smart-search>
 
-        <div class="log" id="logDefault">// events will appear here…</div>
       </div>
 
       <!--
@@ -168,7 +155,6 @@
 
         <smart-search id="searchCustom" theme="light"></smart-search>
 
-        <div class="log" id="logCustom">// events will appear here…</div>
       </div>
 
       <!--
@@ -218,7 +204,6 @@
           "
         ></smart-search>
 
-        <div class="log" id="logBranded">// events will appear here…</div>
       </div>
 
     </div>
@@ -239,10 +224,9 @@
       ];
 
       // ── Wire up a search instance ─────────────────────────────────────────────
-      function wireSearch(searchEl, logEl) {
+      function wireSearch(searchEl) {
         searchEl.addEventListener('smart-search', (e) => {
           const { query, category } = e.detail;
-          logEl.textContent = `smart-search\n  query: "${query}"\n  category: "${category}"\n\n  → fetching…`;
           searchEl.loading = true;
           setTimeout(() => {
             const q = query.toLowerCase();
@@ -253,27 +237,15 @@
             );
             searchEl.loading = false;
             searchEl.results = results;
-            logEl.textContent = `smart-search\n  query: "${query}"\n  category: "${category}"\n\n  → ${results.length} result(s) returned`;
           }, 600);
-        });
-
-        searchEl.addEventListener('smart-search-select', (e) => {
-          logEl.textContent = `smart-search-select\n  id:    ${e.detail.result.id}\n  title: "${e.detail.result.title}"`;
-        });
-
-        searchEl.addEventListener('smart-search-clear', () => {
-          logEl.textContent = 'smart-search-clear';
         });
       }
 
       // ── Example 1: default categories ────────────────────────────────────────
-      // No categories set → component uses its four built-in defaults.
       const searchDefault = document.getElementById('searchDefault');
-      wireSearch(searchDefault, document.getElementById('logDefault'));
+      wireSearch(searchDefault);
 
       // ── Example 2: custom categories passed by the parent ────────────────────
-      // Arrays must be set as a JS property (not an HTML attribute).
-      // The parent is fully in control of which categories to expose.
       const searchCustom = document.getElementById('searchCustom');
 
       searchCustom.categories = [
@@ -282,13 +254,11 @@
         { value: 'customer', label: 'Customer',       icon: '👤' },
       ];
 
-      wireSearch(searchCustom, document.getElementById('logCustom'));
+      wireSearch(searchCustom);
 
       // ── Example 3: custom branding via CSS custom properties ─────────────────
-      // No JS property changes needed — branding is purely via CSS variables
-      // set inline on the element above (or from a stylesheet).
       const searchBranded = document.getElementById('searchBranded');
-      wireSearch(searchBranded, document.getElementById('logBranded'));
+      wireSearch(searchBranded);
 
       // ── Theme toggle ──────────────────────────────────────────────────────────
       window.setTheme = function(mode) {

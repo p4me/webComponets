@@ -450,6 +450,10 @@ export class SmartSearch extends LitElement {
         this._focusedIndex = -1;
         this._input?.blur();
         break;
+      case 'Tab':
+        this._open = false;
+        this._focusedIndex = -1;
+        break;
     }
   }
 
