@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Search Component — Demo</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        padding: 40px 24px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #f0f4f8;
+        color: #111827;
+        transition: background 0.2s, color 0.2s;
+      }
+
+      body.dark {
+        background: #0f172a;
+        color: #f1f5f9;
+      }
+
+      .page {
+        max-width: 560px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0 0 4px;
+      }
+
+      p.subtitle {
+        font-size: 14px;
+        color: #6b7280;
+        margin: 0 0 24px;
+      }
+
+      /* Theme toggle */
+      .theme-bar {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 32px;
+      }
+
+      .themeLabel {
+        align-self: center;
+      }
+
+      .theme-bar button {
+        padding: 4px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        border: 1.5px solid #d1d5db;
+        background: #ffffff;
+        color: #6b7280;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .theme-bar button.active {
+        background: #0057b8;
+        border-color: #0057b8;
+        color: #ffffff;
+        font-weight: 600;
+      }
+
+      /* Demo sections */
+      .section {
+        margin-bottom: 24px;
+        padding: 24px;
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+      }
+
+      body.dark .section {
+        background: #1e293b;
+        border-color: #334155;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .section h2 {
+        font-size: 13px;
+        font-weight: 700;
+        color: #0057b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0 0 4px;
+      }
+
+      .section p {
+        font-size: 13px;
+        color: #6b7280;
+        margin: 0 0 16px;
+      }
+
+      body.dark .section h2 { color: #4d9eff; }
+      body.dark .section p  { color: #94a3b8; }
+
+    </style>
+    <script type="module" crossorigin src="/webComponets/assets/index-2j5TdHHK.js"></script>
+  </head>
+  <body>
+    <div class="page">
+
+      <h1>smart-search</h1>
+      <p class="subtitle">Smart Search Web Component — built with Lit</p>
+
+      <!-- Theme toggle -->
+      <div class="theme-bar">
+        <span class="themeLabel">Select theme:</span>
+        <button id="btnLight" class="active" onclick="setTheme('light')">Light</button>
+        <button id="btnDark"  onclick="setTheme('dark')">Dark</button>
+        <button id="btnAuto"  onclick="setTheme('auto')">Auto</button>
+      </div>
+
+      <!--
+        ══════════════════════════════════════════════════════════════════════
+        Example 1 — Default categories (no configuration needed)
+
+        Nothing extra is set on this element. The component ships with four
+        built-in tabs: All · Accounts · Customers · Transactions.
+        ══════════════════════════════════════════════════════════════════════
+      -->
+      <div class="section">
+        <h2>Default categories</h2>
+        <p>No configuration — uses the built-in tabs: All · Accounts · Customers · Transactions</p>
+
+        <smart-search id="searchDefault" theme="light"></smart-search>
+
+      </div>
+
+      <!--
+        ══════════════════════════════════════════════════════════════════════
+        Example 2 — Custom categories (configured by the parent)
+
+        Arrays cannot be passed as plain HTML attributes, so the parent sets
+        the `categories` JavaScript property directly after grabbing the
+        element. This is the standard web-component pattern for complex data.
+
+        The script below does:
+          searchCustom.categories = [
+            { value: 'all',      label: 'All',          icon: '🔍' },
+            { value: 'account',  label: 'Account Name', icon: '🏦' },
+            { value: 'customer', label: 'Customer',      icon: '👤' },
+          ];
+        ══════════════════════════════════════════════════════════════════════
+      -->
+      <div class="section">
+        <h2>Custom categories (configured by parent)</h2>
+        <p>Parent passes only Account Name and Customer — no transaction search needed here.</p>
+
+        <smart-search id="searchCustom" theme="light"></smart-search>
+
+      </div>
+
+      <!--
+        ══════════════════════════════════════════════════════════════════════
+        Example 3 — Custom branding (CSS custom properties)
+
+        Shadow DOM blocks regular CSS from leaking in, but CSS custom
+        properties (variables) DO flow through. Any --search-* variable
+        set on the element (or in a parent CSS rule) is picked up inside.
+
+        Overridable tokens:
+          --search-font-family   font stack
+          --search-font-size     base font size
+          --search-primary       brand / accent colour
+          --search-border        idle border colour
+          --search-border-focus  focused border colour
+          --search-bg            surface background
+          --search-bg-hover      hovered row background
+          --search-text          primary text colour
+          --search-text-muted    secondary / placeholder colour
+          --search-radius        corner radius
+          --search-shadow        dropdown shadow
+          --search-chip-bg       active chip background
+          --search-chip-color    active chip text colour
+        ══════════════════════════════════════════════════════════════════════
+      -->
+      <div class="section">
+        <h2>Custom branding (CSS variables)</h2>
+        <p>Brand colour, font family, and corner radius all overridden by the parent via CSS custom properties.</p>
+
+        <!--
+          Inline style sets brand tokens directly on this element.
+          You can also do this in a stylesheet:
+            smart-search#searchBranded { --search-primary: #e63946; }
+        -->
+        <smart-search
+          id="searchBranded"
+          theme="light"
+          style="
+            --search-font-family:  'Georgia', serif;
+            --search-font-size:    15px;
+            --search-primary:      #e63946;
+            --search-border-focus: #e63946;
+            --search-chip-bg:      #fde8ea;
+            --search-chip-color:   #e63946;
+            --search-radius:       4px;
+          "
+        ></smart-search>
+
+      </div>
+
+    </div>
+
+  </body>
+</html>
