@@ -1,7 +1,6 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import type { SearchCategory, SearchCategory_Option, SearchResult, SearchEventDetail } from './types/search.types.js';
 
 /**
@@ -180,15 +179,12 @@ export class SmartSearch extends LitElement {
 
     /* ── Results dropdown ────────────────────────────────── */
     .dropdown {
-      position: absolute;
-      top: calc(100% + 6px);
-      left: 0;
-      right: 0;
-      background: var(--search-bg);
+      position: fixed;
+      background: var(--search-bg, #ffffff);
       border: 1.5px solid var(--search-border);
       border-radius: var(--search-radius);
       box-shadow: var(--search-shadow);
-      z-index: 100;
+      z-index: 9999;
       max-height: 320px;
       overflow-y: auto;
       overscroll-behavior: contain;
@@ -309,24 +305,37 @@ export class SmartSearch extends LitElement {
    * @example
    * search.categories = [
    *   { value: 'all',    label: 'All' },
-   *   { value: 'fund',   label: 'Funds',    icon: '💰' },
-   *   { value: 'branch', label: 'Branches', icon: '🏢' },
+   *   { value: 'fund',   label: 'Funds' },
+   *   { value: 'branch', label: 'Branches' },
    * ];
    */
-  @property({ type: Array }) categories: SearchCategory_Option[] = [
-    { value: 'all',         label: 'All',          icon: '🔍' },
-    { value: 'account',     label: 'Accounts',     icon: '🏦' },
-    { value: 'customer',    label: 'Customers',    icon: '👤' },
-    { value: 'transaction', label: 'Transactions', icon: '💳' },
+  private _categories: SearchCategory_Option[] = [
+    { value: 'all',         label: 'All' },
+    { value: 'account',     label: 'Accounts' },
+    { value: 'customer',    label: 'Customers'},
+    { value: 'transaction', label: 'Transactions'},
   ];
+
+  @property({ type: Array })
+  get categories() { return this._categories; }
+  set categories(val: SearchCategory_Option[]) {
+    this._categories = val;
+    if (val.length > 0 && !val.some((c) => c.value === this._category)) {
+      this._category = val[0].value;
+    }
+    this.requestUpdate('categories');
+  }
 
   // ── Internal state ──────────────────────────────────────────
 
   @state() private _category: SearchCategory = 'all';
   @state() private _open = false;
   @state() private _focusedIndex = -1;
+  private _debounceTimer = 0;
 
-  @query('input') private _input!: HTMLInputElement;
+  @query('input')    private _input!: HTMLInputElement;
+  @query('.wrapper') private _wrapper!: HTMLElement;
+  @query('.dropdown') private _dropdown?: HTMLElement;
 
   // ── Lifecycle ────────────────────────────────────────────────
 
@@ -338,24 +347,47 @@ export class SmartSearch extends LitElement {
     }
   };
 
+  private readonly _reposition = () => {
+    if (this._open) this._positionDropdown();
+  };
+
+  private _positionDropdown() {
+    if (!this._dropdown || !this._wrapper) return;
+    const rect = this._wrapper.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+
+    this._dropdown.style.left  = `${rect.left}px`;
+    this._dropdown.style.width = `${rect.width}px`;
+
+    if (spaceBelow < 200 && rect.top > spaceBelow) {
+      // flip above
+      this._dropdown.style.bottom = `${window.innerHeight - rect.top + 6}px`;
+      this._dropdown.style.top    = 'auto';
+    } else {
+      this._dropdown.style.top    = `${rect.bottom + 6}px`;
+      this._dropdown.style.bottom = 'auto';
+    }
+  }
+
   connectedCallback() {
     super.connectedCallback();
     document.addEventListener('pointerdown', this._onDocPointerDown);
+    window.addEventListener('resize', this._reposition);
+    window.addEventListener('scroll', this._reposition, true);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     document.removeEventListener('pointerdown', this._onDocPointerDown);
+    window.removeEventListener('resize', this._reposition);
+    window.removeEventListener('scroll', this._reposition, true);
   }
 
-  // ── Lifecycle (update hooks) ─────────────────────────────────
+  // Lifecycle (update hooks)
 
-  willUpdate(changed: Map<string, unknown>) {
-    // If categories changed and the active tab no longer exists, reset to first.
-    // willUpdate runs before render so no extra update cycle is triggered.
-    if (changed.has('categories') && this.categories.length > 0) {
-      const stillExists = this.categories.some((c) => c.value === this._category);
-      if (!stillExists) this._category = this.categories[0].value;
+  updated(changed: Map<string, unknown>) {
+    if (changed.has('_open') && this._open) {
+      this._positionDropdown();
     }
   }
 
@@ -376,15 +408,18 @@ export class SmartSearch extends LitElement {
     return this.results.filter((r) => r.category === this._category);
   }
 
-  // ── Event handlers ───────────────────────────────────────────
+  // Event handlers
 
   private _onInput(e: Event) {
     this.value = (e.target as HTMLInputElement).value;
     this._focusedIndex = -1;
+    clearTimeout(this._debounceTimer);
 
     if (this.value.trim()) {
       this._open = true;
-      this._dispatch('smart-search', { query: this.value.trim(), category: this._category });
+      this._debounceTimer = window.setTimeout(() => {
+        this._dispatch('smart-search', { query: this.value.trim(), category: this._category });
+      }, 300);
     } else {
       this._open = false;
       this.results = [];
@@ -445,31 +480,26 @@ export class SmartSearch extends LitElement {
     this.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }));
   }
 
-  // ── Highlight ────────────────────────────────────────────────
+  // Highlight
 
   private _highlight(text: string) {
     const query = this.value.trim();
-    if (!query) return text;
-    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(escaped, 'gi');
-    let out = '';
-    let last = 0;
-    let m: RegExpExecArray | null;
-    while ((m = regex.exec(text)) !== null) {
-      out += esc(text.slice(last, m.index));
-      out += `<mark>${esc(m[0])}</mark>`;
-      last = m.index + m[0].length;
-    }
-    if (!out) return text;
-    return unsafeHTML(out + esc(text.slice(last)));
+    if (!query) return html`${text}`;
+
+    const lowerText = text.toLowerCase();
+    const lowerQuery = query.toLowerCase();
+    const idx = lowerText.indexOf(lowerQuery);
+
+    if (idx === -1) return html`${text}`;
+
+    return html`
+      ${text.slice(0, idx)}
+      <mark>${text.slice(idx, idx + query.length)}</mark>
+      ${text.slice(idx + query.length)}
+    `;
   }
 
-  // ── Render ───────────────────────────────────────────────────
-
-  private _categoryIcon(value: string): string {
-    const match = this.categories.find((c) => c.value === value);
-    return match?.icon ?? '📋';
-  }
+  // Render
 
   render() {
     const focused = this._filteredResults[this._focusedIndex];
@@ -556,7 +586,6 @@ export class SmartSearch extends LitElement {
                     @click=${() => this._selectResult(r)}
                     @mouseenter=${() => { this._focusedIndex = i; }}
                   >
-                    <div class="result-icon" aria-hidden="true">${this._categoryIcon(r.category)}</div>
                     <div class="result-text">
                       <div class="result-title">${this._highlight(r.title)}</div>
                       ${r.subtitle
@@ -572,10 +601,6 @@ export class SmartSearch extends LitElement {
       </div>
     `;
   }
-}
-
-function esc(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 declare global {

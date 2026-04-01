@@ -4,8 +4,6 @@ export type SearchCategory = string;
 export interface SearchCategory_Option {
   value: string;
   label: string;
-  /** Optional emoji/icon shown next to results of this category */
-  icon?: string;
 }
 
 export interface SearchResult {
@@ -14,6 +12,7 @@ export interface SearchResult {
   title: string;
   subtitle?: string;
   meta?: string;
+  [key: string]: any;        // Makes it flexible as required
 }
 
 export interface SearchEventDetail {

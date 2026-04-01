@@ -52,11 +52,11 @@
     
     // Fully configurable for any banking entity
     search.categories = [
-      { value: 'all',         label: 'All',          icon: '🔍' },
-      { value: 'account',     label: 'Accounts',     icon: '🏦' },
-      { value: 'customer',    label: 'Customers',    icon: '👤' },
-      { value: 'transaction', label: 'Transactions', icon: '💳' },
-      { value: 'fund',        label: 'Funds',        icon: '💰' },
+      { value: 'all',         label: 'All'},
+      { value: 'account',     label: 'Accounts'},
+      { value: 'customer',    label: 'Customers'},
+      { value: 'transaction', label: 'Transactions'},
+      { value: 'fund',        label: 'Funds'},
     ];
     
     search.addEventListener('smart-search', (e) => {
@@ -113,17 +113,17 @@
 ## Data Types
   ```bash
   interface SearchResult {
-  id: string;
-  category: string;
-  title: string;
-  subtitle?: string;
-  meta?: string;
+    id: string;
+    category: string;
+    title: string;
+    subtitle?: string;
+    meta?: string;
+    [key: string]: any; 
   }
   
   interface SearchCategory_Option {
     value: string;
     label: string;
-    icon?: string;
   }
   ```
 

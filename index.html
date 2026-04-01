@@ -158,6 +158,56 @@
         <div class="log" id="logCustom">// events will appear here…</div>
       </div>
 
+      <!--
+        ══════════════════════════════════════════════════════════════════════
+        Example 3 — Custom branding (CSS custom properties)
+
+        Shadow DOM blocks regular CSS from leaking in, but CSS custom
+        properties (variables) DO flow through. Any --search-* variable
+        set on the element (or in a parent CSS rule) is picked up inside.
+
+        Overridable tokens:
+          --search-font-family   font stack
+          --search-font-size     base font size
+          --search-primary       brand / accent colour
+          --search-border        idle border colour
+          --search-border-focus  focused border colour
+          --search-bg            surface background
+          --search-bg-hover      hovered row background
+          --search-text          primary text colour
+          --search-text-muted    secondary / placeholder colour
+          --search-radius        corner radius
+          --search-shadow        dropdown shadow
+          --search-chip-bg       active chip background
+          --search-chip-color    active chip text colour
+        ══════════════════════════════════════════════════════════════════════
+      -->
+      <div class="section">
+        <h2>Custom branding (CSS variables)</h2>
+        <p>Brand colour, font family, and corner radius all overridden by the parent via CSS custom properties.</p>
+
+        <!--
+          Inline style sets brand tokens directly on this element.
+          You can also do this in a stylesheet:
+            smart-search#searchBranded { --search-primary: #e63946; }
+        -->
+        <smart-search
+          id="searchBranded"
+          theme="light"
+          style="
+            --search-font-family:  'Georgia', serif;
+            --search-font-size:    15px;
+            --search-primary:      #e63946;
+            --search-border-focus: #e63946;
+            --search-chip-bg:      #fde8ea;
+            --search-chip-color:   #e63946;
+            --search-radius:       4px;
+          "
+        ></smart-search>
+
+        <div class="log" id="logBranded">// events will appear here…</div>
+      </div>
+
     </div>
 
     <script type="module">
@@ -221,14 +271,21 @@
 
       wireSearch(searchCustom, document.getElementById('logCustom'));
 
+      // ── Example 3: custom branding via CSS custom properties ─────────────────
+      // No JS property changes needed — branding is purely via CSS variables
+      // set inline on the element above (or from a stylesheet).
+      const searchBranded = document.getElementById('searchBranded');
+      wireSearch(searchBranded, document.getElementById('logBranded'));
+
       // ── Theme toggle ──────────────────────────────────────────────────────────
       window.setTheme = function(mode) {
         document.getElementById('btnLight').classList.toggle('active', mode === 'light');
         document.getElementById('btnDark').classList.toggle('active', mode === 'dark');
         document.getElementById('btnAuto').classList.toggle('active', mode === 'auto');
         document.body.classList.toggle('dark', mode === 'dark');
-        searchDefault.theme = mode;
-        searchCustom.theme  = mode;
+        searchDefault.theme  = mode;
+        searchCustom.theme   = mode;
+        searchBranded.theme  = mode;
       };
     </script>
   </body>

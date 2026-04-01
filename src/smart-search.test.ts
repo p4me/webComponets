@@ -27,11 +27,12 @@ function getInput(el: SmartSearch): HTMLInputElement {
   return el.shadowRoot!.querySelector('input')!;
 }
 
-async function typeInInput(el: SmartSearch, value: string) {
+async function typeInInput(el: SmartSearch, value: string, flush = false) {
   const input = getInput(el);
   input.value = value;
   input.dispatchEvent(new Event('input', { bubbles: true }));
   await el.updateComplete;
+  if (flush) vi.runAllTimers();
 }
 
 async function pressKey(el: SmartSearch, key: string) {
@@ -102,13 +103,13 @@ describe('Rendering', () => {
 
 describe('Search events', () => {
   let el: SmartSearch;
-  beforeEach(async () => { el = await createElement(); });
-  afterEach(() => el.remove());
+  beforeEach(async () => { vi.useFakeTimers(); el = await createElement(); });
+  afterEach(() => { el.remove(); vi.useRealTimers(); });
 
   it('fires smart-search when user types', async () => {
     const handler = vi.fn();
     el.addEventListener('smart-search', handler);
-    await typeInInput(el, 'john');
+    await typeInInput(el, 'john', true);
     expect(handler).toHaveBeenCalledOnce();
     expect(handler.mock.calls[0][0].detail).toMatchObject({ query: 'john', category: 'all' });
   });
@@ -120,15 +121,16 @@ describe('Search events', () => {
       .find(c => c.textContent?.trim() === 'Accounts') as HTMLButtonElement;
     accountsChip.click();
     await el.updateComplete;
-    await typeInInput(el, 'savings');
+    await typeInInput(el, 'savings', true);
     expect(handler.mock.calls[0][0].detail.category).toBe('account');
   });
 
   it('does not fire smart-search when input is cleared', async () => {
-    await typeInInput(el, 'john');
+    await typeInInput(el, 'john', true);
     const handler = vi.fn();
     el.addEventListener('smart-search', handler);
     await typeInInput(el, '');
+    vi.runAllTimers();
     expect(handler).not.toHaveBeenCalled();
   });
 });
@@ -353,13 +355,13 @@ describe('Accessibility', () => {
 
 describe('Event communication', () => {
   let el: SmartSearch;
-  beforeEach(async () => { el = await createElement(); });
-  afterEach(() => el.remove());
+  beforeEach(async () => { vi.useFakeTimers(); el = await createElement(); });
+  afterEach(() => { el.remove(); vi.useRealTimers(); });
 
   it('smart-search event bubbles and is composed', async () => {
     const handler = vi.fn();
     document.addEventListener('smart-search', handler);
-    await typeInInput(el, 'test');
+    await typeInInput(el, 'test', true);
     expect(handler).toHaveBeenCalled();
     document.removeEventListener('smart-search', handler);
   });

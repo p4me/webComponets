@@ -1,14 +1,16 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  test: {
+    environment: 'happy-dom',
+    globals: true,
+  },
   build: {
     lib: {
       entry: 'src/index.ts',
-      formats: ['es'],
-      fileName: 'banking-components',
-    },
-    rollupOptions: {
-      external: ['lit'],
+      name: 'SmartSearch',
+      formats: ['es', 'umd'],
+      fileName: (format) => `smart-search.${format === 'es' ? 'js' : 'umd.cjs'}`,
     },
   },
 });
