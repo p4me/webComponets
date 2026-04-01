@@ -29,17 +29,17 @@ export class SmartSearch extends LitElement {
        *   smart-search {
        *     --search-font-family: 'Inter', sans-serif;
        *     --search-font-size:   15px;
-       *     --search-primary:     #e63946;   /* your brand colour *\/
-       *     --search-radius:      4px;        /* sharper corners *\/
+       *     --search-primary:     #e63946;
+       *     --search-radius:      4px;
        *   }
        *
-       * Or inline on a single instance:
-       *   <smart-search style="--search-primary:#e63946; --search-font-family:'Inter',sans-serif">
+       * Or inline:
+       *   <smart-search style="--search-primary:#e63946;">
        * ─────────────────────────────────────────────────────────────────────── */
       --search-font-family:  -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --search-font-size:    14px;
       --search-primary:      #0057b8;
-      --search-border:       #d1d5db;
+      --search-border:       #9ca3af;
       --search-border-focus: #0057b8;
       --search-bg:           #ffffff;
       --search-bg-hover:     #f3f4f6;
