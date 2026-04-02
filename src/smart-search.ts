@@ -207,19 +207,6 @@ export class SmartSearch extends LitElement {
     .result-item:hover,
     .result-item[aria-selected="true"] { background: var(--search-bg-hover); }
 
-    .result-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      font-size: 16px;
-      background: var(--search-chip-bg);
-      color: var(--search-primary);
-    }
-
     .result-text { flex: 1; min-width: 0; }
 
     .result-title {
@@ -305,7 +292,7 @@ export class SmartSearch extends LitElement {
    * Filter tabs shown below the search bar.
    * Override to add, remove, or rename categories.
    * The first entry is selected by default.
-   * Each entry: { value: string, label: string, icon?: string }
+   * Each entry: { value: string, label: string }
    *
    * @example
    * search.categories = [
